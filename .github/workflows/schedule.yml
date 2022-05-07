@@ -5,14 +5,14 @@ on:
   # 当 提交到当前仓库时立即运行
   workflow_dispatch:
   schedule:
-    #- cron: '36 23 * * *'
+    - cron: '36 23 * * *'
   push:
     branches: [ main ]
 
-  schedule:
+#  schedule:
     # 东八区09:00，约莫有延时10~20，看github服务器情况
 #    - cron: '0 1 * * *'
-     - cron: '36 23 * * *'
+
   # 当star当前仓库时立即执行
   watch:
     types: [started]
