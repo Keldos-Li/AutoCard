@@ -22,6 +22,8 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import top.gcszhn.autocard.utils.LogUtils;
 import top.gcszhn.autocard.utils.SpringUtils;
 import top.gcszhn.autocard.utils.StatusCode;
@@ -53,11 +55,16 @@ public class AutoCardJob implements Job {
         String mail = dataMap.getString("mail");
         String dingtalkURL = dataMap.getString("dingtalkurl");
         String dingtalkSecret = dataMap.getString("dingtalksecret");
-        int maxTrial = Optional.ofNullable(dataMap.getString("maxtrial"))
-            .map((String value)-> {
+        int maxTrial = Optional.ofNullable(dataMap.get("maxtrial"))
+            .map((Object value)-> {
                 try{
-                    if (value.equals("")) return DEFAULT_MAX_TRIAL;
-                    return Integer.parseInt(value);
+                    if (value instanceof Integer) return (int) value;
+                    if (value instanceof String) {
+                        if (value.equals("")) return DEFAULT_MAX_TRIAL;
+                        return Integer.parseInt((String) value);
+                    } else {
+                        throw new NumberFormatException();
+                    }
                 } catch (NumberFormatException e) {
                     LogUtils.printMessage("无效的整数格式", LogUtils.Level.ERROR);
                     return DEFAULT_MAX_TRIAL;
@@ -77,8 +84,8 @@ public class AutoCardJob implements Job {
         
         try {
             LogUtils.printMessage("自动打卡开始");
-            if (username==null||password==null||username.isEmpty()||password.isEmpty()) 
-                throw new NullPointerException("Empty username or password of zjupassport");
+            if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password))
+                throw new NullPointerException("用户名/密码不能为空");
         
             StatusCode statusCode = new StatusCode();
             int trial = maxTrial;
