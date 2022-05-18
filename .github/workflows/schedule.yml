@@ -4,16 +4,9 @@ name: schedule
 on:
   # 当 提交到当前仓库时立即运行
   workflow_dispatch:
-#  schedule:
-    #- cron: '36 23 * * *'
   push:
     branches: [ main ]
 
-#  schedule:
-    # 东八区09:00，约莫有延时10~20，看github服务器情况
-#    - cron: '0 1 * * *'
-#     - cron: '36 23 * * *'
-    
   schedule:
     # UTC 01:00 和 UTC 04:00
     - cron: '0 1,4 * * *'
