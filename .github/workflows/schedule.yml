@@ -4,15 +4,20 @@ name: schedule
 on:
   # 当 提交到当前仓库时立即运行
   workflow_dispatch:
-  schedule:
+#  schedule:
     #- cron: '36 23 * * *'
   push:
     branches: [ main ]
 
-  schedule:
+#  schedule:
     # 东八区09:00，约莫有延时10~20，看github服务器情况
 #    - cron: '0 1 * * *'
-     - cron: '36 23 * * *'
+#     - cron: '36 23 * * *'
+    
+  schedule:
+    # UTC 01:00 和 UTC 04:00
+    - cron: '0 1,4 * * *'
+  
   # 当star当前仓库时立即执行
   watch:
     types: [started]
@@ -24,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       #上游同步
       - name: Sync with upstream
@@ -40,25 +45,25 @@ jobs:
 
       # 安装java环境
       - name: "Setup Java"
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
            distribution: 'temurin'
-           java-version: '17'
+           java-version: '11'
+           cache: "maven"
 
-      - name: "Setup tesseract-ocr"
-        run: "sudo apt install tesseract-ocr -y && mv config/tessdata action/config/tessdata"
+      - name: "Build with maven"
+        run: "mvn clean package spring-boot:repackage"
+
+      - name: "Configure file"
+        run: "rm -rf config && mv action/config config && mv target/autocard*jar autocard.jar"
       
       # 缓存信息，当缓存发生变化时，请修改key值
       - name: "Cache autocard cache file"
         uses: actions/cache@v3
         with: 
-          key: autocard_cache-${{ hashFiles('action/config/application.json') }}-${{ hashFiles('action/autocard.jar') }}-${{ secrets.AUTOCARD_CACHE_FLAG }}
-          path: "action/autocard_cache.json"
+          key: autocard_cache-${{ secrets.AUTOCARD_CACHE_FLAG }}
+          path: "autocard_cache.json"
 
-      # 查看运行时目录
-      - name: "View workflow filesystem"
-        run: ls -R action
-            
       # 执行打卡
       - name: "Run AutoCard"
         env: 
@@ -67,4 +72,4 @@ jobs:
           AUTOCARD_DINGTALK_URL: ${{ secrets.AUTOCARD_DINGTALK_URL }}
           AUTOCARD_DINGTALK_SECRET: ${{ secrets.AUTOCARD_DINGTALK_SECRET }}
           AUTOCARD_MAX_TRIAL: ${{ secrets.AUTOCARD_MAX_TRIAL }}
-        run: cd action && java  --add-opens java.base/java.lang=ALL-UNNAMED -jar autocard.jar --app.autoCard.immediate=true
+        run:  "java  --add-opens java.base/java.lang=ALL-UNNAMED -jar autocard.jar --app.autoCard.immediate=true"
