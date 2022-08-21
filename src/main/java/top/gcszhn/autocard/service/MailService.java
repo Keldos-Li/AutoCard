@@ -69,6 +69,7 @@ public class MailService implements AppService {
             "mail.smtp.host",
             "mail.smtp.port",
             "mail.smtp.ssl.enable",
+            "mail.smtp.ssl.protocols",
             "mail.smtp.auth",
             "mail.smtp.starttls.enable",
             "mail.debug"
